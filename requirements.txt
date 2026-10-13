@@ -1,19 +1,19 @@
 # Web server
-fastapi
-uvicorn
-python-multipart
+fastapi==0.143.0
+uvicorn==0.54.0
+python-multipart==0.0.32
 
 # Text-to-speech
-piper-tts
+piper-tts==1.8.0
 
 # Text extraction
-pymupdf
-ebooklib
-beautifulsoup4
-python-docx
+pymupdf==1.28.2
+ebooklib==0.20
+beautifulsoup4==4.15.0
+python-docx==1.2.0
 
 # MP3 encoding
-lameenc
+lameenc==1.8.4
 
 # Tests
-pytest
+pytest==9.1.1

@@ -6,9 +6,9 @@ At the end of each phase: tick the boxes, give the owner a "How to test this" li
 ---
 
 ## Phase 0 — Project setup and GitHub
-- [ ] Check that Python 3.11+ and Git are installed on this Windows computer. If not, give install steps (`winget`).
+- [x] Check that Python 3.11+ and Git are installed on this Windows computer. If not, give install steps (`winget`).
 - [x] Create the folder structure: `app/` (backend), `static/` (HTML/CSS/JS, `i18n/`), `voices/`, `scripts/`, `tests/`, `data/` (temporary files, git-ignored).
-- [ ] Create a Python virtual environment and `requirements.txt`.
+- [x] Create a Python virtual environment and `requirements.txt`.
 - [x] Add `.gitignore` (venv, `data/`, `voices/*.onnx*`, `.env`, `__pycache__`).
 - [x] Choose the licence (see CLAUDE.md), explain it to the owner, and add `LICENSE`.
 - [x] Add a short README (English, plus a Bulgarian summary) with "how to run locally".
