@@ -38,14 +38,32 @@ cd solidarity-speaks
 # 2. Create a virtual environment (a private Python space for this project)
 python -m venv .venv
 
-# 3. Activate it
-.\.venv\Scripts\Activate.ps1
-
-# 4. Install the required packages
-pip install -r requirements.txt
+# 3. Install the required packages into it
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Instructions for downloading the voices and starting the app will be added in the next phase.
+Then start the app:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run.ps1
+```
+
+The first start downloads the voices (about 190 MB) with `scripts/download_voices.py`.
+Then open **http://localhost:8000** in your browser. The window also shows an address for
+opening the app from a phone on the same Wi-Fi. Press **Ctrl+C** to stop the app.
+
+## Voices
+
+Voices are [Piper](https://huggingface.co/rhasspy/piper-voices) models in the `voices/` folder
+(an `.onnx` file plus its `.onnx.json` file). The app finds every voice in that folder automatically.
+To add a voice, drop in its two files and add a line to `voices/voices.json` with its display name,
+language and gender.
+
+| Voice                  | Language  | Gender |
+|------------------------|-----------|--------|
+| `bg_BG-dimitar-medium` | Bulgarian | male   |
+| `en_GB-alan-medium`    | English   | male   |
+| `en_GB-cori-medium`    | English   | female |
 
 ## Project folders
 

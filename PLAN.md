@@ -17,11 +17,11 @@ At the end of each phase: tick the boxes, give the owner a "How to test this" li
 **Done when:** the empty project is on GitHub and the owner can see it in the browser.
 
 ## Phase 1 — Paste text → hear it
-- [ ] `scripts/download_voices.py`: download the Bulgarian Piper voice(s) and one male + one female English voice into `voices/`. Create `voices/voices.json`.
-- [ ] Backend: load the voices at startup; endpoint that takes text + voice + speed and returns an MP3.
-- [ ] Simple accessible page: text box, voice dropdown, speed control (0.75×–1.5×), "Convert" button, audio player, download link.
-- [ ] Bulgarian UI with the English toggle working from the start (translation files).
-- [ ] One `run.ps1` (or clear command) so the owner can start the app with one line.
+- [x] `scripts/download_voices.py`: download the Bulgarian Piper voice(s) and one male + one female English voice into `voices/`. Create `voices/voices.json`.
+- [x] Backend: load the voices at startup; endpoint that takes text + voice + speed and returns an MP3.
+- [x] Simple accessible page: text box, voice dropdown, speed control (0.75×–1.5×), "Convert" button, audio player, download link.
+- [x] Bulgarian UI with the English toggle working from the start (translation files).
+- [x] One `run.ps1` (or clear command) so the owner can start the app with one line.
 
 **Done when:** the owner pastes a Bulgarian paragraph and hears it in the browser, on his computer and on his phone (same Wi-Fi network).
 

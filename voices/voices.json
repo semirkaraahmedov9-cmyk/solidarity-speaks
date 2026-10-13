@@ -1,0 +1,5 @@
+{
+  "bg_BG-dimitar-medium": { "name": "Димитър", "language": "bg", "gender": "male" },
+  "en_GB-alan-medium": { "name": "Alan", "language": "en", "gender": "male" },
+  "en_GB-cori-medium": { "name": "Cori", "language": "en", "gender": "female" }
+}

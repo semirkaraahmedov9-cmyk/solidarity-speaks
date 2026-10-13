@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- Всички текстове на страницата идват от static/i18n/bg.json и en.json (атрибут data-i18n) -->
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="page_title"></title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip_to_content"></a>
+
+  <header class="top-bar">
+    <button type="button" id="lang-toggle" class="secondary"></button>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <h1 data-i18n="app_name"></h1>
+    <p data-i18n="intro"></p>
+
+    <form id="speak-form" novalidate>
+      <div class="field">
+        <label for="text" data-i18n="label_text"></label>
+        <p id="text-hint" class="hint"></p>
+        <textarea id="text" name="text" rows="10" aria-describedby="text-hint"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="voice" data-i18n="label_voice"></label>
+        <select id="voice" name="voice"></select>
+      </div>
+
+      <div class="field">
+        <label for="speed" data-i18n="label_speed"></label>
+        <select id="speed" name="speed"></select>
+      </div>
+
+      <button type="submit" id="convert" data-i18n="button_convert"></button>
+    </form>
+
+    <!-- Съобщения за състоянието, които екранните четци прочитат автоматично -->
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <div id="error" class="error" role="alert"></div>
+
+    <section id="result" class="result" aria-labelledby="result-heading" hidden>
+      <h2 id="result-heading" data-i18n="result_heading"></h2>
+      <audio id="player" controls preload="metadata"></audio>
+      <a id="download" class="button" data-i18n="download_mp3"></a>
+    </section>
+  </main>
+</body>
+</html>
