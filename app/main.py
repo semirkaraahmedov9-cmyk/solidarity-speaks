@@ -34,6 +34,16 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Solidarity Speaks!", lifespan=lifespan)
 
 
+@app.middleware("http")
+async def always_check_for_updates(request: Request, call_next):
+    # Браузърът винаги проверява за по-нова версия на страницата (HTML, CSS, JS),
+    # за да не използва стар код след обновяване на приложението
+    response = await call_next(request)
+    if not request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 def error(code: str, status: int) -> JSONResponse:
     """Грешка към страницата. Изпращаме само код; страницата показва
     разбираемо съобщение на избрания език (вж. static/i18n/)."""

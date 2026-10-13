@@ -19,6 +19,15 @@ if (-not (Test-Path $python)) {
 # Python да пише кирилица правилно в конзолата
 $env:PYTHONUTF8 = "1"
 
+# Проверка дали приложението вече не работи (напр. в друг прозорец със стария код)
+if (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) {
+    Write-Host ""
+    Write-Host "The app is already running (port $port is in use)." -ForegroundColor Yellow
+    Write-Host "Close the other PowerShell window where it runs (or press Ctrl+C there), then run this again."
+    Write-Host "If you cannot find that window, restart the computer."
+    exit 1
+}
+
 # Ако гласовете още не са изтеглени, ги изтегляме
 if (-not (Get-ChildItem voices -Filter *.onnx)) {
     Write-Host "Downloading voices (about 190 MB, only the first time)..."

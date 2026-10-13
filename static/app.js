@@ -175,6 +175,22 @@ function setBusy(area, busy) {
   $("main").setAttribute("aria-busy", String(state.busy.upload || state.busy.paste));
 }
 
+// Обвива бутон така, че при неочаквана грешка потребителят да види съобщение,
+// вместо бутонът просто да не прави нищо
+function safely(area, handler) {
+  return async (event) => {
+    event.preventDefault();
+    try {
+      await handler(event);
+    } catch (error) {
+      console.error(error);
+      setBusy(area, false);
+      showStatus(area, null);
+      showError(area, "unexpected");
+    }
+  };
+}
+
 // --- Качване на файл и глави ---
 
 function fileExtension(name) {
@@ -335,10 +351,11 @@ async function start() {
   try {
     const response = await fetch("api/voices");
     const data = await response.json();
-    state.voices = data.voices;
-    state.maxChars = data.max_text_chars;
-    state.maxUploadMb = data.max_upload_mb;
-    state.extensions = data.allowed_extensions;
+    // Ако сървърът не изпрати някоя настройка, остава стойността по подразбиране
+    state.voices = data.voices ?? [];
+    state.maxChars = data.max_text_chars ?? state.maxChars;
+    state.maxUploadMb = data.max_upload_mb ?? state.maxUploadMb;
+    state.extensions = data.allowed_extensions ?? state.extensions;
   } catch {
     showStatus("paste", null);
     showError("paste", "network");
@@ -348,10 +365,10 @@ async function start() {
   applyTexts();
   if (!state.voices.length) showError("paste", "no_voices");
 
-  $("upload-form").addEventListener("submit", analyzeFile);
+  $("upload-form").addEventListener("submit", safely("upload", analyzeFile));
   $("file").addEventListener("change", fileSelected);
   setUpDropZone();
-  $("speak-form").addEventListener("submit", convert);
+  $("speak-form").addEventListener("submit", safely("paste", convert));
   $("lang-toggle").addEventListener("click", () => {
     setLanguage(state.lang === "bg" ? "en" : "bg");
   });
