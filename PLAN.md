@@ -33,7 +33,7 @@ At the end of each phase: tick the boxes, give the owner a "How to test this" li
 - [x] Show the list of detected chapters (title + approximate length/duration) before converting.
 - [x] `pytest` tests with one small sample file per format (create the samples yourself, with Bulgarian text).
 
-**Done when:** the owner uploads one file of each type and sees sensible chapter lists.
+**Done when:** the owner uploads one file of each type and sees sensible chapter lists. ✅ Tested by the owner on 2026-10-13 (PDF, DOCX, EPUB).
 
 ## Phase 3 — Convert the whole book → download chapters
 - [ ] Background conversion jobs with a job ID, in parallel across CPU cores.
