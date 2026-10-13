@@ -6,13 +6,14 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import config
+from .extract import ExtractError, extract_book
 from .tts import Voice, load_voices, synthesize_mp3
 
 logger = logging.getLogger("uvicorn.error")
@@ -66,6 +67,8 @@ def list_voices():
         "max_text_chars": config.MAX_TEXT_CHARS,
         "min_speed": config.MIN_SPEED,
         "max_speed": config.MAX_SPEED,
+        "max_upload_mb": config.MAX_UPLOAD_MB,
+        "allowed_extensions": config.ALLOWED_EXTENSIONS,
     }
 
 
@@ -85,6 +88,50 @@ def speak(request: SpeakRequest):
 
     mp3 = synthesize_mp3(voice, text, request.speed)
     return Response(content=mp3, media_type="audio/mpeg")
+
+
+@app.post("/api/chapters")
+def find_chapters(file: UploadFile | None = None):
+    """Чете качения файл и връща списъка с глави. Файлът не се записва никъде."""
+    if file is None or not file.filename:
+        return error("no_file", 400)
+    max_bytes = config.MAX_UPLOAD_MB * 1024 * 1024
+    data = file.file.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        return error("file_too_large", 413)
+
+    try:
+        book = extract_book(file.filename, data)
+    except ExtractError as problem:
+        return error(problem.code, 400)
+    except Exception:
+        # Повреден или необичаен файл, който библиотеките не успяват да прочетат
+        logger.exception("Неуспешно четене на файл")
+        return error("unreadable_file", 400)
+
+    chapters = []
+    untitled_number = 0
+    for chapter in book.chapters:
+        if not chapter.intro:
+            untitled_number += 1
+        chapters.append(
+            {
+                "title": chapter.title,
+                "intro": chapter.intro,
+                "number": untitled_number,
+                "words": chapter.words,
+                "minutes": chapter.words / config.WORDS_PER_MINUTE,
+            }
+        )
+    total_words = sum(chapter.words for chapter in book.chapters)
+    return {
+        "filename": file.filename,
+        "source": book.source,
+        "chapters": chapters,
+        "total_words": total_words,
+        "total_minutes": total_words / config.WORDS_PER_MINUTE,
+        "part_words": config.PART_TARGET_WORDS,
+    }
 
 
 # Уеб страницата (HTML, CSS, JavaScript). Трябва да е последна, след адресите на /api.

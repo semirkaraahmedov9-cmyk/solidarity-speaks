@@ -65,6 +65,15 @@ language and gender.
 | `en_GB-alan-medium`    | English   | male   |
 | `en_GB-cori-medium`    | English   | female |
 
+## Running the tests
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest
+```
+
+The tests use the small Bulgarian sample files in `tests/samples/`
+(recreate them with `.\.venv\Scripts\python.exe tests\make_samples.py`).
+
 ## Project folders
 
 | Folder     | Contents                                              |

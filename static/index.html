@@ -19,34 +19,62 @@
     <h1 data-i18n="app_name"></h1>
     <p data-i18n="intro"></p>
 
-    <form id="speak-form" novalidate>
-      <div class="field">
-        <label for="text" data-i18n="label_text"></label>
-        <p id="text-hint" class="hint"></p>
-        <textarea id="text" name="text" rows="10" aria-describedby="text-hint"></textarea>
-      </div>
+    <!-- Качване на файл -->
+    <section class="card" aria-labelledby="upload-heading">
+      <h2 id="upload-heading" data-i18n="upload_heading"></h2>
+      <form id="upload-form" novalidate>
+        <!-- Файлът може и да се провлачи с мишката тук, но бутонът за избор работи и сам -->
+        <div class="field drop-zone" id="drop-zone">
+          <label for="file" data-i18n="label_file"></label>
+          <p id="file-hint" class="hint"></p>
+          <input type="file" id="file" name="file" accept=".pdf,.epub,.docx,.txt" aria-describedby="file-hint">
+        </div>
+        <button type="submit" id="analyze" data-i18n="button_analyze"></button>
+      </form>
 
-      <div class="field">
-        <label for="voice" data-i18n="label_voice"></label>
-        <select id="voice" name="voice"></select>
-      </div>
+      <p id="upload-status" class="status" role="status" aria-live="polite"></p>
+      <div id="upload-error" class="error" role="alert"></div>
 
-      <div class="field">
-        <label for="speed" data-i18n="label_speed"></label>
-        <select id="speed" name="speed"></select>
-      </div>
+      <section id="chapters" class="chapters" aria-labelledby="chapters-heading" hidden>
+        <h3 id="chapters-heading"></h3>
+        <p id="chapters-summary"></p>
+        <p id="chapters-note"></p>
+        <ol id="chapter-list" class="chapter-list"></ol>
+      </section>
+    </section>
 
-      <button type="submit" id="convert" data-i18n="button_convert"></button>
-    </form>
+    <!-- Поставяне на текст -->
+    <section class="card" aria-labelledby="paste-heading">
+      <h2 id="paste-heading" data-i18n="paste_heading"></h2>
+      <form id="speak-form" novalidate>
+        <div class="field">
+          <label for="text" data-i18n="label_text"></label>
+          <p id="text-hint" class="hint"></p>
+          <textarea id="text" name="text" rows="8" aria-describedby="text-hint"></textarea>
+        </div>
 
-    <!-- Съобщения за състоянието, които екранните четци прочитат автоматично -->
-    <p id="status" class="status" role="status" aria-live="polite"></p>
-    <div id="error" class="error" role="alert"></div>
+        <div class="field">
+          <label for="voice" data-i18n="label_voice"></label>
+          <select id="voice" name="voice"></select>
+        </div>
 
-    <section id="result" class="result" aria-labelledby="result-heading" hidden>
-      <h2 id="result-heading" data-i18n="result_heading"></h2>
-      <audio id="player" controls preload="metadata"></audio>
-      <a id="download" class="button" data-i18n="download_mp3"></a>
+        <div class="field">
+          <label for="speed" data-i18n="label_speed"></label>
+          <select id="speed" name="speed"></select>
+        </div>
+
+        <button type="submit" id="convert" data-i18n="button_convert"></button>
+      </form>
+
+      <!-- Съобщения за състоянието, които екранните четци прочитат автоматично -->
+      <p id="paste-status" class="status" role="status" aria-live="polite"></p>
+      <div id="paste-error" class="error" role="alert"></div>
+
+      <section id="result" class="result" aria-labelledby="result-heading" hidden>
+        <h3 id="result-heading" data-i18n="result_heading"></h3>
+        <audio id="player" controls preload="metadata"></audio>
+        <a id="download" class="button" data-i18n="download_mp3"></a>
+      </section>
     </section>
   </main>
 </body>

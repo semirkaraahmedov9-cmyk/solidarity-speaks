@@ -1,4 +1,4 @@
-// Логика на страницата: преводи, списък с гласове, превръщане на текст в реч.
+// Логика на страницата: преводи, качване на файл и списък с глави, превръщане на текст в реч.
 "use strict";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5];
@@ -6,18 +6,24 @@ const LANGUAGES = ["bg", "en"];
 
 const state = {
   lang: "bg",
-  texts: {},          // текущите преводи
-  voices: [],         // гласовете от сървъра
+  texts: {},            // текущите преводи
+  voices: [],           // гласовете от сървъра
   maxChars: 10000,
-  busy: false,        // true, докато тече превръщане
-  audioUrl: null,     // адрес на последния MP3 в паметта на браузъра
-  lastStatus: null,   // ключ на последното съобщение (за смяна на езика)
-  lastError: null,
+  maxUploadMb: 50,
+  extensions: [".pdf", ".epub", ".docx", ".txt"],
+  busy: { upload: false, paste: false },  // true, докато се чака сървърът
+  audioUrl: null,       // адрес на последния MP3 в паметта на браузъра
+  book: null,           // последният резултат за главите
+  // Последните съобщения във всяка част на страницата (за смяна на езика)
+  messages: {
+    upload: { status: null, error: null },
+    paste: { status: null, error: null },
+  },
 };
 
 const $ = (id) => document.getElementById(id);
 
-// Връща превод по ключ и замества {max} и др. със стойности
+// Връща превод по ключ и замества {max}, {name} и др. със стойности
 function t(key, values = {}) {
   let text = state.texts[key] ?? key;
   for (const [name, value] of Object.entries(values)) {
@@ -28,6 +34,18 @@ function t(key, values = {}) {
 
 function formatNumber(number) {
   return new Intl.NumberFormat(state.lang).format(number);
+}
+
+// „около 2 440 думи“: големите числа се закръгляват до десетици
+function formatWords(words) {
+  return formatNumber(words >= 100 ? Math.round(words / 10) * 10 : words);
+}
+
+function formatDuration(minutes) {
+  const total = Math.round(minutes);
+  if (total < 1) return t("duration_under_minute");
+  if (total < 60) return t("duration_minutes", { m: total });
+  return t("duration_hours", { h: Math.floor(total / 60), m: total % 60 });
 }
 
 // --- Език ---
@@ -65,12 +83,14 @@ function applyTexts() {
   toggle.lang = t("switch_language_lang");
 
   $("text-hint").textContent = t("hint_text", { max: formatNumber(state.maxChars) });
+  $("file-hint").textContent = t("hint_file", { max: state.maxUploadMb });
   $("download").download = t("download_filename");
 
   fillVoiceOptions();
   fillSpeedOptions();
-  if (state.lastStatus) showStatus(state.lastStatus);
-  if (state.lastError) showError(state.lastError);
+  renderMessages("upload");
+  renderMessages("paste");
+  if (state.book) renderChapters();
 }
 
 // --- Падащи менюта ---
@@ -105,47 +125,182 @@ function fillSpeedOptions() {
 }
 
 // --- Съобщения ---
+// area е "upload" или "paste": всяка част на страницата има свои съобщения.
+// Пазим ключа и стойностите, за да можем да ги преведем при смяна на езика.
 
-function showStatus(key) {
-  state.lastStatus = key;
-  $("status").textContent = key ? t(key) : "";
+function showStatus(area, key, values = {}) {
+  state.messages[area].status = key ? { key, values } : null;
+  renderMessages(area);
 }
 
-// Грешките имат и думата „Грешка:“, не само червен цвят
-function showError(error) {
-  state.lastError = error;
-  const box = $("error");
+function showError(area, code) {
+  state.messages[area].error = code;
+  renderMessages(area);
+}
+
+function renderMessages(area) {
+  const { status, error } = state.messages[area];
+  $(`${area}-status`).textContent = status ? t(status.key, status.values) : "";
+
+  // Грешките имат и думата „Грешка:“, не само червен цвят
+  const box = $(`${area}-error`);
   box.replaceChildren();
   if (!error) return;
   const prefix = document.createElement("strong");
   prefix.textContent = t("error_prefix") + " ";
-  box.append(prefix, t(`error_${error}`, { max: formatNumber(state.maxChars) }));
+  const max = area === "upload" ? state.maxUploadMb : formatNumber(state.maxChars);
+  box.append(prefix, t(`error_${error}`, { max }));
 }
 
-// --- Превръщане в реч ---
+// Грешка без наш код означава, че сървърът не е отговорил
+function errorCode(error) {
+  const code = error && error.message;
+  return code && state.texts[`error_${code}`] ? code : "network";
+}
+
+async function postAndCheck(url, options) {
+  const response = await fetch(url, { method: "POST", ...options });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || "conversion_failed");
+  }
+  return response;
+}
+
+// aria-disabled вместо disabled, за да не се губи фокусът от бутона
+function setBusy(area, busy) {
+  state.busy[area] = busy;
+  const button = area === "upload" ? $("analyze") : $("convert");
+  button.setAttribute("aria-disabled", String(busy));
+  $("main").setAttribute("aria-busy", String(state.busy.upload || state.busy.paste));
+}
+
+// --- Качване на файл и глави ---
+
+function fileExtension(name) {
+  const dot = name.lastIndexOf(".");
+  return dot >= 0 ? name.slice(dot).toLowerCase() : "";
+}
+
+async function analyzeFile(event) {
+  event.preventDefault();
+  if (state.busy.upload) return;
+
+  const file = $("file").files[0];
+  showError("upload", null);
+  // Проверки още в браузъра, за да не се чака излишно
+  let problem = null;
+  if (!file) problem = "no_file";
+  else if (!state.extensions.includes(fileExtension(file.name))) problem = "unsupported_type";
+  else if (file.size > state.maxUploadMb * 1024 * 1024) problem = "file_too_large";
+  else if (file.size === 0) problem = "empty_file";
+  if (problem) {
+    showStatus("upload", null);
+    showError("upload", problem);
+    $("file").focus();
+    return;
+  }
+
+  setBusy("upload", true);
+  showStatus("upload", "status_reading_file");
+  state.book = null;
+  $("chapters").hidden = true;
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    const response = await postAndCheck("api/chapters", { body: form });
+    state.book = await response.json();
+    renderChapters();
+    showStatus("upload", "status_chapters_found", { count: state.book.chapters.length });
+  } catch (error) {
+    showStatus("upload", null);
+    showError("upload", errorCode(error));
+  } finally {
+    setBusy("upload", false);
+  }
+}
+
+function chapterTitle(chapter) {
+  if (chapter.intro) return t("chapter_intro");
+  return chapter.title || t("chapter_untitled", { n: chapter.number });
+}
+
+function renderChapters() {
+  const book = state.book;
+  $("chapters-heading").textContent = t("chapters_heading", { name: book.filename });
+  $("chapters-summary").textContent = t("chapters_summary", {
+    count: book.chapters.length,
+    words: formatWords(book.total_words),
+    duration: formatDuration(book.total_minutes),
+  });
+  $("chapters-note").textContent =
+    book.source === "parts" ? t("chapters_note_parts", { words: formatNumber(book.part_words) }) : "";
+
+  const list = $("chapter-list");
+  list.replaceChildren();
+  for (const chapter of book.chapters) {
+    const item = document.createElement("li");
+    const title = document.createElement("span");
+    title.className = "chapter-title";
+    title.textContent = chapterTitle(chapter);
+    const details = document.createElement("span");
+    details.className = "chapter-details";
+    details.textContent = t("chapter_details", {
+      words: formatWords(chapter.words),
+      duration: formatDuration(chapter.minutes),
+    });
+    item.append(title, " ", details);
+    list.append(item);
+  }
+  $("chapters").hidden = false;
+}
+
+// Провлачване на файл с мишката (допълнение към бутона, не замяна)
+function setUpDropZone() {
+  const zone = $("drop-zone");
+  // Файл, пуснат извън рамката, не трябва да отваря нова страница в браузъра
+  window.addEventListener("dragover", (event) => event.preventDefault());
+  window.addEventListener("drop", (event) => event.preventDefault());
+
+  zone.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    zone.classList.add("dragging");
+  });
+  zone.addEventListener("dragleave", () => zone.classList.remove("dragging"));
+  zone.addEventListener("drop", (event) => {
+    event.preventDefault();
+    zone.classList.remove("dragging");
+    if (event.dataTransfer.files.length) {
+      $("file").files = event.dataTransfer.files;
+      fileSelected();
+    }
+  });
+}
+
+function fileSelected() {
+  const file = $("file").files[0];
+  showError("upload", null);
+  showStatus("upload", file ? "status_file_selected" : null, { name: file ? file.name : "" });
+}
+
+// --- Превръщане на поставен текст в реч ---
 
 async function convert(event) {
   event.preventDefault();
-  if (state.busy) return;
+  if (state.busy.paste) return;
 
   const text = $("text").value.trim();
-  showError(null);
-  if (!text) {
-    showError("empty_text");
-    $("text").focus();
-    return;
-  }
-  if (text.length > state.maxChars) {
-    showError("text_too_long");
+  showError("paste", null);
+  if (!text || text.length > state.maxChars) {
+    showError("paste", text ? "text_too_long" : "empty_text");
     $("text").focus();
     return;
   }
 
-  setBusy(true);
-  showStatus("status_converting");
+  setBusy("paste", true);
+  showStatus("paste", "status_converting");
   try {
-    const response = await fetch("api/speak", {
-      method: "POST",
+    const response = await postAndCheck("api/speak", {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         text,
@@ -153,27 +308,14 @@ async function convert(event) {
         speed: Number($("speed").value),
       }),
     });
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.error || "conversion_failed");
-    }
     showResult(await response.blob());
-    showStatus("status_ready");
+    showStatus("paste", "status_ready");
   } catch (error) {
-    showStatus(null);
-    // Грешка без наш код означава, че сървърът не е отговорил
-    const known = error.message && state.texts[`error_${error.message}`];
-    showError(known ? error.message : "network");
+    showStatus("paste", null);
+    showError("paste", errorCode(error));
   } finally {
-    setBusy(false);
+    setBusy("paste", false);
   }
-}
-
-function setBusy(busy) {
-  state.busy = busy;
-  // aria-disabled вместо disabled, за да не се губи фокусът от бутона
-  $("convert").setAttribute("aria-disabled", String(busy));
-  $("main").setAttribute("aria-busy", String(busy));
 }
 
 function showResult(blob) {
@@ -187,24 +329,28 @@ function showResult(blob) {
 // --- Стартиране ---
 
 async function start() {
-  const lang = savedLanguage();
-  await setLanguage(lang);
-  showStatus("status_loading");
+  await setLanguage(savedLanguage());
+  showStatus("paste", "status_loading");
 
   try {
     const response = await fetch("api/voices");
     const data = await response.json();
     state.voices = data.voices;
     state.maxChars = data.max_text_chars;
+    state.maxUploadMb = data.max_upload_mb;
+    state.extensions = data.allowed_extensions;
   } catch {
-    showStatus(null);
-    showError("network");
+    showStatus("paste", null);
+    showError("paste", "network");
     return;
   }
-  showStatus(null);
+  showStatus("paste", null);
   applyTexts();
-  if (!state.voices.length) showError("no_voices");
+  if (!state.voices.length) showError("paste", "no_voices");
 
+  $("upload-form").addEventListener("submit", analyzeFile);
+  $("file").addEventListener("change", fileSelected);
+  setUpDropZone();
   $("speak-form").addEventListener("submit", convert);
   $("lang-toggle").addEventListener("click", () => {
     setLanguage(state.lang === "bg" ? "en" : "bg");

@@ -26,12 +26,12 @@ At the end of each phase: tick the boxes, give the owner a "How to test this" li
 **Done when:** the owner pastes a Bulgarian paragraph and hears it in the browser, on his computer and on his phone (same Wi-Fi network). ✅ Tested by the owner on 2026-10-13.
 
 ## Phase 2 — Upload a file → see its chapters
-- [ ] Upload form (button + drag-and-drop, but the button must work alone for keyboard/screen-reader users).
-- [ ] Text extraction for TXT, DOCX, EPUB and PDF, as described in CLAUDE.md.
-- [ ] Chapter splitting with the fallbacks described in CLAUDE.md.
-- [ ] Detect scanned PDFs and show a friendly message.
-- [ ] Show the list of detected chapters (title + approximate length/duration) before converting.
-- [ ] `pytest` tests with one small sample file per format (create the samples yourself, with Bulgarian text).
+- [x] Upload form (button + drag-and-drop, but the button must work alone for keyboard/screen-reader users).
+- [x] Text extraction for TXT, DOCX, EPUB and PDF, as described in CLAUDE.md.
+- [x] Chapter splitting with the fallbacks described in CLAUDE.md.
+- [x] Detect scanned PDFs and show a friendly message.
+- [x] Show the list of detected chapters (title + approximate length/duration) before converting.
+- [x] `pytest` tests with one small sample file per format (create the samples yourself, with Bulgarian text).
 
 **Done when:** the owner uploads one file of each type and sees sensible chapter lists.
 
