@@ -14,7 +14,7 @@ At the end of each phase: tick the boxes, give the owner a "How to test this" li
 - [x] Add a short README (English, plus a Bulgarian summary) with "how to run locally".
 - [x] `git init`, first commit, create a **public** GitHub repo with the GitHub CLI (`gh repo create`), and push. Ask the owner for the repo name and whether it goes under his personal account or the organisation's account.
 
-**Done when:** the empty project is on GitHub and the owner can see it in the browser.
+**Done when:** the empty project is on GitHub and the owner can see it in the browser. ✅ Done on 2026-10-13.
 
 ## Phase 1 — Paste text → hear it
 - [x] `scripts/download_voices.py`: download the Bulgarian Piper voice(s) and one male + one female English voice into `voices/`. Create `voices/voices.json`.
@@ -23,7 +23,7 @@ At the end of each phase: tick the boxes, give the owner a "How to test this" li
 - [x] Bulgarian UI with the English toggle working from the start (translation files).
 - [x] One `run.ps1` (or clear command) so the owner can start the app with one line.
 
-**Done when:** the owner pastes a Bulgarian paragraph and hears it in the browser, on his computer and on his phone (same Wi-Fi network).
+**Done when:** the owner pastes a Bulgarian paragraph and hears it in the browser, on his computer and on his phone (same Wi-Fi network). ✅ Tested by the owner on 2026-10-13.
 
 ## Phase 2 — Upload a file → see its chapters
 - [ ] Upload form (button + drag-and-drop, but the button must work alone for keyboard/screen-reader users).
