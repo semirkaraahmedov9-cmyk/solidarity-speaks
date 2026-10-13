@@ -12,7 +12,7 @@ At the end of each phase: tick the boxes, give the owner a "How to test this" li
 - [x] Add `.gitignore` (venv, `data/`, `voices/*.onnx*`, `.env`, `__pycache__`).
 - [x] Choose the licence (see CLAUDE.md), explain it to the owner, and add `LICENSE`.
 - [x] Add a short README (English, plus a Bulgarian summary) with "how to run locally".
-- [ ] `git init`, first commit, create a **public** GitHub repo with the GitHub CLI (`gh repo create`), and push. Ask the owner for the repo name and whether it goes under his personal account or the organisation's account.
+- [x] `git init`, first commit, create a **public** GitHub repo with the GitHub CLI (`gh repo create`), and push. Ask the owner for the repo name and whether it goes under his personal account or the organisation's account.
 
 **Done when:** the empty project is on GitHub and the owner can see it in the browser.
 
