@@ -56,5 +56,6 @@
   "error_scanned_pdf": "This PDF seems to be scanned: it only contains pictures of pages, with no text. Such files cannot be read yet. Please try another version of the document (for example DOCX, or a PDF with text).",
   "error_pdf_password": "This PDF is protected with a password and cannot be read. Please upload a version without a password.",
   "error_unreadable_file": "The file cannot be read. It may be damaged. Please try another file.",
-  "error_unexpected": "Something went wrong. Please reload the page with Ctrl+F5 and try again."
+  "error_unexpected": "Something went wrong. Please reload the page with Ctrl+F5 and try again.",
+  "error_no_speech": "The text has no words that can be read aloud."
 }

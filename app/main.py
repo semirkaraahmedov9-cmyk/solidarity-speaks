@@ -97,6 +97,8 @@ def speak(request: SpeakRequest):
         return error("bad_speed", 400)
 
     mp3 = synthesize_mp3(voice, text, request.speed)
+    if not mp3:
+        return error("no_speech", 400)
     return Response(content=mp3, media_type="audio/mpeg")
 
 

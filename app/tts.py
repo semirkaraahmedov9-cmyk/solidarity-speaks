@@ -82,9 +82,14 @@ def synthesize_mp3(voice: Voice, text: str, speed: float) -> bytes:
     encoder.set_quality(config.MP3_QUALITY)
 
     mp3 = bytearray()
+    has_audio = False
     with voice.lock:
         # Piper връща звука изречение по изречение; кодираме всяко веднага
         for chunk in model.synthesize(text, syn_config):
             mp3 += encoder.encode(chunk.audio_int16_bytes)
+            has_audio = True
+    # Текст без нищо за произнасяне (напр. само „???“): няма звук
+    if not has_audio:
+        return b""
     mp3 += encoder.flush()
     return bytes(mp3)
