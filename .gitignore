@@ -1,0 +1,24 @@
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Temporary uploads and generated audio (keep only the empty folder)
+data/*
+!data/.gitkeep
+
+# Voice model files (too large; downloaded by scripts/download_voices.py)
+voices/*.onnx
+voices/*.onnx.json
+
+# Secrets and local settings
+.env
+
+# Editor / OS files
+.vscode/
+Thumbs.db
+.DS_Store

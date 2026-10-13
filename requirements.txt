@@ -1,0 +1,19 @@
+# Web server
+fastapi
+uvicorn
+python-multipart
+
+# Text-to-speech
+piper-tts
+
+# Text extraction
+pymupdf
+ebooklib
+beautifulsoup4
+python-docx
+
+# MP3 encoding
+lameenc
+
+# Tests
+pytest
