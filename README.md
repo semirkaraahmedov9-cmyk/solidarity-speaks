@@ -32,8 +32,8 @@ You need **Python 3.11+** and **Git**.
 
 ```powershell
 # 1. Download the project
-git clone <repository URL>
-cd <repository folder>
+git clone https://github.com/semirkaraahmedov9-cmyk/solidarity-speaks.git
+cd solidarity-speaks
 
 # 2. Create a virtual environment (a private Python space for this project)
 python -m venv .venv
